@@ -1,0 +1,34 @@
+---
+name: "Deploy After Merged"
+
+on:
+  workflow_run:
+    workflows: ["Trigger Deploy Condition"]
+    branches: ["main", "development"]
+    types: [completed]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Download Stored PR envs
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          name: envs
+          workflow_conclusion: success
+      - name: Restore files to Env
+        run: |
+          {
+            echo "BASE_BRANCH=$(cat base-branch.txt)"
+            echo "CURRENT_BRANCH=$(cat current-branch.txt)"
+            echo "GITHUB_SHA_SHORTEN=$(cat github-sha.txt)"
+          } >> $GITHUB_ENV
+      - name: echo env json
+        run: echo "${{ toJSON(env) }}"
+      - name: echo github.event.workflow_run json
+        run: echo "${{ toJSON(github.event.workflow_run) }}"
+      - name: Deploy Process
+        run: |
+          echo "Assume there are some deploy process"

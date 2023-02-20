@@ -1,0 +1,39 @@
+---
+name: "Build with Env Stored"
+
+on:
+  pull_request:
+    branches: ["main", "development"]
+    types: [opened, synchronize, reopened]
+
+env:
+  BASE_BRANCH: ${{ github.base_ref }}
+  CURRENT_BRANCH: ${{ github.head_ref }}
+
+jobs:
+  build:
+    if: contains(fromJSON('["main", "development"]'), github.base_ref)
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: Store PR envs
+        run: |
+          echo "${BASE_BRANCH}" > base-branch.txt
+          echo "${CURRENT_BRANCH}" > current-branch.txt
+          echo "${GITHUB_SHA::7}" > github-sha.txt
+          cat base-branch.txt
+          cat current-branch.txt
+          cat github-sha.txt
+      - name: Upload PR envs
+        uses: actions/upload-artifact@v3
+        with:
+          name: envs
+          path: |
+            base-branch.txt
+            current-branch.txt
+            github-sha.txt
+          retention-days: 1
+      - name: Build Process
+        run: |
+          echo "Assume there are some build process"
