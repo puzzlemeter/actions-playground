@@ -4,7 +4,6 @@ name: "Deploy After Merged"
 on:
   workflow_run:
     workflows: ["Trigger Deploy Condition"]
-    branches: ["main", "development"]
     types: [completed]
 
 jobs:
